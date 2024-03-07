@@ -68,6 +68,12 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     // Glide
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+    val lifecycle_version = "2.7.0"
+    val arch_version = "2.2.0"
+    // ViewModel
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version")
+    // ViewModel utilities for Compose
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
     // Navigation Component
     val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-compose:$nav_version")

@@ -15,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.route.newsapp_c39_gmonthu.api.ApiManager
+import com.route.newsapp_c39_gmonthu.fragments.news.NewsViewModel
 import com.route.newsapp_c39_gmonthu.model.Constants
 import com.route.newsapp_c39_gmonthu.model.SourcesItem
 import com.route.newsapp_c39_gmonthu.model.SourcesResponse
@@ -23,6 +24,7 @@ import com.route.newsapp_c39_gmonthu.ui.theme.white
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 // 1- create an interface
 interface OnNewsSourcesTabSelectedListener {
@@ -33,57 +35,36 @@ interface OnNewsSourcesTabSelectedListener {
 @Composable
 fun NewsSourcesTabRow(
     categoryId: String,
+    viewModel: NewsViewModel = viewModel(),
     onTabSelected: (sourceId: String) -> Unit,
 //    onNewsSourcesTabSelectedListener: OnNewsSourcesTabSelectedListener
 ) {
-    val selectedIndexState = remember {
-        mutableIntStateOf(0)
-    }
-    val newsSources = remember {
-        mutableStateListOf<SourcesItem>()
-    }
+
     LaunchedEffect(Unit) {
-        ApiManager.getNewsServices()
-            .getNewsSources(Constants.API_KEY, categoryId)
-            .enqueue(object : Callback<SourcesResponse> {
-                override fun onResponse(
-                    call: Call<SourcesResponse>,
-                    response: Response<SourcesResponse>
-                ) {
-                    val sources = response.body()?.sources
-                    if (sources?.isNotEmpty() == true) {
-                        newsSources.addAll(sources)
-                    }
-                }
-
-                override fun onFailure(call: Call<SourcesResponse>, t: Throwable) {
-                    TODO("Not yet implemented")
-                }
-
-
-            })  // enqueue -> background Thread
+        viewModel.fetchSources(categoryId)
 //            .execute()   get Called on Main Thread -> User Clicks and handle user navigation
 
     }
 
     ScrollableTabRow(
-        selectedTabIndex = selectedIndexState.intValue,
+        selectedTabIndex = viewModel.selectedIndexState.intValue,
         divider = {},
         indicator = {},
         edgePadding = 12.dp
     ) {
-        newsSources.forEachIndexed { index, item ->
+        viewModel.newsSources.forEachIndexed { index, item ->
             LaunchedEffect(Unit) {
-                if (newsSources.isNotEmpty())
-                    onTabSelected(newsSources.get(0).id ?: "")
+                if (viewModel.newsSources.isNotEmpty())
+                    onTabSelected(viewModel.newsSources.get(0).id ?: "")
             }
-            Tab(selected = selectedIndexState.intValue == index, onClick = {
+            Tab(selected = viewModel.selectedIndexState.intValue == index, onClick = {
                 onTabSelected(item.id ?: "")
 //                onNewsSourcesTabSelectedListener.onNewsSourcesTabSelected(item.id ?: "")
-                selectedIndexState.intValue = index
+                viewModel.selectedIndexState.intValue = index
             }, selectedContentColor = white, unselectedContentColor = green) {
                 Text(
-                    text = item.name ?: "", modifier = if (selectedIndexState.intValue == index)
+                    text = item.name ?: "",
+                    modifier = if (viewModel.selectedIndexState.intValue == index)
                         Modifier
                             .padding(2.dp)
                             .background(green, CircleShape)

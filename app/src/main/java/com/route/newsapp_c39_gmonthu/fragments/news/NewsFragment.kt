@@ -1,4 +1,4 @@
-package com.route.newsapp_c39_gmonthu.fragments
+package com.route.newsapp_c39_gmonthu.fragments.news
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,13 +22,14 @@ import com.route.newsapp_c39_gmonthu.utils.NewsSourcesTabRow
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun NewsFragmentContent(modifier: Modifier = Modifier, categoryId: String) {
-    val newsStatesItems = remember {
-        mutableStateListOf<ArticlesItem>()
-    }
+fun NewsFragmentContent(
+    modifier: Modifier = Modifier,
+    categoryId: String,
+    viewModel: NewsViewModel = viewModel()
+) {
 
     Column(
         modifier = modifier
@@ -39,34 +40,13 @@ fun NewsFragmentContent(modifier: Modifier = Modifier, categoryId: String) {
             )
     ) {//4-
         NewsSourcesTabRow(categoryId) { sourceId ->
+            // Observe ->   // Observable  has Data ->
+            // Observe ->
+            // Observe ->
+            viewModel.fetchNewsBySource(sourceId)
+        }
 
-            ApiManager.getNewsServices()
-                .getNewsBySource(Constants.API_KEY, sourceId)
-//                    .execute() // main Thread
-                .enqueue(object : Callback<ArticlesResponse> {
-                    override fun onResponse(
-                        call: Call<ArticlesResponse>,
-                        response: Response<ArticlesResponse>
-                    ) {
-                        newsStatesItems.clear()
-                        val newsList = response.body()?.articles
-                        if (newsList?.isNotEmpty() == true) {
-                            newsStatesItems.addAll(newsList)
-                        }
-                        // Documentation -> Thread -> Room
-                    }
-                    // Main Thread ->  handle button clicks => UserNavigation
-                    // Background Thread -> Networking -> Local Database  <-> Heavy loading task
-                    // Instagram -> APIs Sign up
-
-
-                    override fun onFailure(call: Call<ArticlesResponse>, t: Throwable) {
-
-                    }
-
-                })
-
-        } //{ sourceId ->
+        //{ sourceId ->
         // 1- Serialization -> Convert kotlin to json ,,,
         //    Deserialization -> Convert json to kotlin
         // 2-  interface callback ->
@@ -75,7 +55,7 @@ fun NewsFragmentContent(modifier: Modifier = Modifier, categoryId: String) {
         //                      Activity ->   taskListFragment=             TasksListFragment()
         //                                   taskListFragment.getTodosFromDatabase()
         //
-        NewsList(newsStatesItems.toList())
+        NewsList(viewModel.newsStatesItems.toList())
     }
 }
 
